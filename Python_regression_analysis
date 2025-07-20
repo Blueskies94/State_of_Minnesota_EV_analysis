@@ -1,53 +1,604 @@
 {
  "cells": [
   {
-   "cell_type": "markdown",
-   "metadata": {
-    "id": "60359d86-93e3-495b-8a5a-263735b55320"
-   },
-   "source": [
-    "# Activity: Perform linear regression"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {
-    "id": "1ffc2b1e-7061-4100-b7a7-b7bed589c55e"
-   },
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {
-    "id": "92b22e4b-fcb0-4f99-98fb-f639669dce2d"
-   },
-   "source": [
-    "## **Step 1: Imports** \n"
-   ]
-  },
-  {
-   "cell_type": "markdown",
-   "metadata": {
-    "id": "a1cc0f65-3243-4915-ae6a-e9f050c08e3a"
-   },
-   "source": [
-    "Import relevant Python libraries and modules."
-   ]
-  },
-  {
    "cell_type": "code",
    "execution_count": 1,
-   "metadata": {
-    "id": "ac02e2f5-e96d-4046-b8b8-a46cb06939f6"
-   },
+   "id": "fb09f0d6-a5c0-42fa-9875-63a4e68bde06",
+   "metadata": {},
    "outputs": [],
    "source": [
-    "# Import relevant Python libraries and modules.\n",
-    "\n",
-    "### YOUR CODE HERE ###\n",
+    "#Upload the necessary packages for this analysis\n",
     "import pandas as pd\n",
     "import seaborn as sns\n",
     "from statsmodels.formula.api import ols\n",
     "import statsmodels.api as sm"
    ]
   },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "39066364-9ea0-44bf-9298-f8505cf080a4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = pd.read_csv(\"C:/Users/danny/Downloads/Minnesota_EV_with_census_data2.csv\", delimiter = \",\", header = 0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "4ea3e59d-229f-44a1-ae0c-2524882c3a76",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 730 entries, 0 to 729\n",
+      "Data columns (total 8 columns):\n",
+      " #   Column                   Non-Null Count  Dtype  \n",
+      "---  ------                   --------------  -----  \n",
+      " 0   ZIP_Code                 730 non-null    int64  \n",
+      " 1   Median_income            722 non-null    object \n",
+      " 2   Population               722 non-null    float64\n",
+      " 3   TeslaCount               730 non-null    int64  \n",
+      " 4   NonTeslaCount            730 non-null    int64  \n",
+      " 5   Total_EVs                730 non-null    int64  \n",
+      " 6   Tesla_Proportion_of_Evs  730 non-null    float64\n",
+      " 7   EV_per_1k_people         721 non-null    float64\n",
+      "dtypes: float64(3), int64(4), object(1)\n",
+      "memory usage: 45.8+ KB\n"
+     ]
+    }
+   ],
+   "source": [
+    "#First step of EDA is to examine the columns in the dataset and their associated data types.\n",
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "030bca04-1c3a-4e97-ae12-f1649e10bce9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Change the Median income variable to int64 to be used as a continuous variable in regression analysis.\n",
+    "df[\"Median_income\"] = pd.to_numeric(df[\"Median_income\"], errors=\"coerce\").astype(\"Int64\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "f06f1b1d-cbbf-44ad-9da4-6663589d19f1",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 730 entries, 0 to 729\n",
+      "Data columns (total 8 columns):\n",
+      " #   Column                   Non-Null Count  Dtype  \n",
+      "---  ------                   --------------  -----  \n",
+      " 0   ZIP_Code                 730 non-null    int64  \n",
+      " 1   Median_income            716 non-null    Int64  \n",
+      " 2   Population               722 non-null    float64\n",
+      " 3   TeslaCount               730 non-null    int64  \n",
+      " 4   NonTeslaCount            730 non-null    int64  \n",
+      " 5   Total_EVs                730 non-null    int64  \n",
+      " 6   Tesla_Proportion_of_Evs  730 non-null    float64\n",
+      " 7   EV_per_1k_people         721 non-null    float64\n",
+      "dtypes: Int64(1), float64(3), int64(4)\n",
+      "memory usage: 46.5 KB\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Verify that the Median income column is set to the int64 Dtype.\n",
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "89b8f1bf-b009-40e8-a1cc-999fdad389cb",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(730, 8)"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Examine the total range of the dataset\n",
+    "df.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "678c8189-a2c2-4724-ac05-5ec0d2e18ef0",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "     ZIP_Code  Median_income  Population  TeslaCount  NonTeslaCount  \\\n",
+      "78      55111           <NA>        92.0           2             36   \n",
+      "98      55144           <NA>         NaN           0              1   \n",
+      "100     55155           <NA>        12.0           0             21   \n",
+      "233     55450           <NA>        27.0           0            171   \n",
+      "235     55458           <NA>         NaN           1              0   \n",
+      "236     55487           <NA>         NaN           1              0   \n",
+      "316     55816           <NA>         NaN           0              3   \n",
+      "320     55905           <NA>         0.0           0              3   \n",
+      "383     56002           <NA>         NaN           0              1   \n",
+      "537     56302           <NA>         NaN           1              2   \n",
+      "613     56459           <NA>         NaN           0              1   \n",
+      "661     56562           <NA>       461.0           0              2   \n",
+      "662     56563           <NA>      1130.0           0              2   \n",
+      "682     56619           <NA>         NaN           0              1   \n",
+      "\n",
+      "     Total_EVs  Tesla_Proportion_of_Evs  EV_per_1k_people  \n",
+      "78          38                    0.053            413.04  \n",
+      "98           1                    0.000               NaN  \n",
+      "100         21                    0.000           1750.00  \n",
+      "233        171                    0.000           6333.33  \n",
+      "235          1                    1.000               NaN  \n",
+      "236          1                    1.000               NaN  \n",
+      "316          3                    0.000               NaN  \n",
+      "320          3                    0.000               NaN  \n",
+      "383          1                    0.000               NaN  \n",
+      "537          3                    0.333               NaN  \n",
+      "613          1                    0.000               NaN  \n",
+      "661          2                    0.000              4.34  \n",
+      "662          2                    0.000              1.77  \n",
+      "682          1                    0.000               NaN  \n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "ZIP_Code                   14\n",
+       "Median_income               0\n",
+       "Population                  6\n",
+       "TeslaCount                 14\n",
+       "NonTeslaCount              14\n",
+       "Total_EVs                  14\n",
+       "Tesla_Proportion_of_Evs    14\n",
+       "EV_per_1k_people            5\n",
+       "dtype: int64"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#The dataset size is 730 rows and 8 columns. Next is to examine any rows with null values, deduce whether they will impact our analysis \n",
+    "#they will impact our analysis and decide whether or not to drop them.\n",
+    "rows_with_nulls = df[df.isnull().any(axis=1)]\n",
+    "print(rows_with_nulls)\n",
+    "rows_with_nulls.count()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "1e02c300-4586-46d2-babe-76a0bc171134",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "     ZIP_Code  Median_income  Population  Total_EVs  EV_per_1k_people\n",
+      "78      55111           <NA>        92.0         38            413.04\n",
+      "98      55144           <NA>         NaN          1               NaN\n",
+      "100     55155           <NA>        12.0         21           1750.00\n",
+      "233     55450           <NA>        27.0        171           6333.33\n",
+      "235     55458           <NA>         NaN          1               NaN\n",
+      "236     55487           <NA>         NaN          1               NaN\n",
+      "316     55816           <NA>         NaN          3               NaN\n",
+      "320     55905           <NA>         0.0          3               NaN\n",
+      "383     56002           <NA>         NaN          1               NaN\n",
+      "537     56302           <NA>         NaN          3               NaN\n",
+      "613     56459           <NA>         NaN          1               NaN\n",
+      "661     56562           <NA>       461.0          2              4.34\n",
+      "662     56563           <NA>      1130.0          2              1.77\n",
+      "682     56619           <NA>         NaN          1               NaN\n"
+     ]
+    }
+   ],
+   "source": [
+    "#Focusing on the columns to be used in the regression, we find that the vast majority of Electric Vehicles in ZIP Codes with incomplete data\n",
+    "#belong to three; (55450, 55111)- associated with Minneapolis-Saint Paul International Airport. (55155)- associated with the Minnesota State Capitol.\n",
+    "print(rows_with_nulls.iloc[:,[0,1,2,5,7]])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "0eb6441d-a4da-49fb-a58f-1b322eb848e2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#In addition, ZIP Codes with null values for Median income were not found in the Census dataset, so all 14 rows will be removed.\n",
+    "#Drop rows in the dataset associated with the column containing the most null rows\n",
+    "df = df.dropna(subset=[\"Median_income\"])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "726ffff2-0cd6-429c-ac6a-eaa8631be296",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "Index: 716 entries, 0 to 729\n",
+      "Data columns (total 8 columns):\n",
+      " #   Column                   Non-Null Count  Dtype  \n",
+      "---  ------                   --------------  -----  \n",
+      " 0   ZIP_Code                 716 non-null    int64  \n",
+      " 1   Median_income            716 non-null    Int64  \n",
+      " 2   Population               716 non-null    float64\n",
+      " 3   TeslaCount               716 non-null    int64  \n",
+      " 4   NonTeslaCount            716 non-null    int64  \n",
+      " 5   Total_EVs                716 non-null    int64  \n",
+      " 6   Tesla_Proportion_of_Evs  716 non-null    float64\n",
+      " 7   EV_per_1k_people         716 non-null    float64\n",
+      "dtypes: Int64(1), float64(3), int64(4)\n",
+      "memory usage: 51.0 KB\n"
+     ]
+    }
+   ],
+   "source": [
+    "#View the result of the action\n",
+    "df.info()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "156c08d6-91cd-45ca-a88d-5cb8071874cb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Choose variables for to analyze regression for the Median Income of a ZIP Code and the number of Electric Vehicles per 1K people in that area.\n",
+    "ols_data = df[[\"Median_income\", \"EV_per_1k_people\"]]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "7255502f-3521-4690-acb5-3c85cf734ce9",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Median_income</th>\n",
+       "      <th>EV_per_1k_people</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>130625</td>\n",
+       "      <td>39.40</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>115781</td>\n",
+       "      <td>12.67</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>109464</td>\n",
+       "      <td>7.10</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>64167</td>\n",
+       "      <td>3.35</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>66875</td>\n",
+       "      <td>2.20</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>83209</td>\n",
+       "      <td>6.90</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>89023</td>\n",
+       "      <td>5.70</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>126957</td>\n",
+       "      <td>7.51</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>93500</td>\n",
+       "      <td>7.70</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>99898</td>\n",
+       "      <td>9.88</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   Median_income  EV_per_1k_people\n",
+       "0         130625             39.40\n",
+       "1         115781             12.67\n",
+       "2         109464              7.10\n",
+       "3          64167              3.35\n",
+       "4          66875              2.20\n",
+       "5          83209              6.90\n",
+       "6          89023              5.70\n",
+       "7         126957              7.51\n",
+       "8          93500              7.70\n",
+       "9          99898              9.88"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#First 10 rows of the two variable in our analysis.\n",
+    "ols_data.head(10)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "03bf62b9-3c0f-4712-9258-5cc3ee564335",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Our dependent variable \"y\" is the EV_per_1k_people, this will be influenced by the independent variable \"x\", the Median_income.\n",
+    "ols_formula = \"EV_per_1k_people ~ Median_income\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "08e5770b-6779-4bad-9dbc-1da75dcaaf25",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#The dataframe containing these two variables and the formula to model the relationship between them comprise the Ordinary Least Squares method\n",
+    "OLS = ols(formula = ols_formula, data = ols_data)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "6d316012-81ef-4a1d-b07f-9c5fdb2599e5",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#The data is fit into the model variable.\n",
+    "model = OLS.fit()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "957ac538-af33-417c-9622-f025db5356dd",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<table class=\"simpletable\">\n",
+       "<caption>OLS Regression Results</caption>\n",
+       "<tr>\n",
+       "  <th>Dep. Variable:</th>    <td>EV_per_1k_people</td> <th>  R-squared:         </th> <td>   0.405</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th> <td>   0.405</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th> <td>   486.7</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Date:</th>             <td>Sun, 20 Jul 2025</td> <th>  Prob (F-statistic):</th> <td>1.21e-82</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Time:</th>                 <td>18:44:25</td>     <th>  Log-Likelihood:    </th> <td> -2465.0</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>No. Observations:</th>      <td>   716</td>      <th>  AIC:               </th> <td>   4934.</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Df Residuals:</th>          <td>   714</td>      <th>  BIC:               </th> <td>   4943.</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Df Model:</th>              <td>     1</td>      <th>                     </th>     <td> </td>   \n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>     <td> </td>   \n",
+       "</tr>\n",
+       "</table>\n",
+       "<table class=\"simpletable\">\n",
+       "<tr>\n",
+       "        <td></td>           <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th>  <th>[0.025</th>    <th>0.975]</th>  \n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Intercept</th>     <td>  -14.2287</td> <td>    1.031</td> <td>  -13.806</td> <td> 0.000</td> <td>  -16.252</td> <td>  -12.205</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Median_income</th> <td>    0.0003</td> <td>  1.2e-05</td> <td>   22.061</td> <td> 0.000</td> <td>    0.000</td> <td>    0.000</td>\n",
+       "</tr>\n",
+       "</table>\n",
+       "<table class=\"simpletable\">\n",
+       "<tr>\n",
+       "  <th>Omnibus:</th>       <td>643.856</td> <th>  Durbin-Watson:     </th> <td>   1.477</td> \n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Prob(Omnibus):</th> <td> 0.000</td>  <th>  Jarque-Bera (JB):  </th> <td>32422.307</td>\n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Skew:</th>          <td> 3.796</td>  <th>  Prob(JB):          </th> <td>    0.00</td> \n",
+       "</tr>\n",
+       "<tr>\n",
+       "  <th>Kurtosis:</th>      <td>35.080</td>  <th>  Cond. No.          </th> <td>3.13e+05</td> \n",
+       "</tr>\n",
+       "</table><br/><br/>Notes:<br/>[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.<br/>[2] The condition number is large, 3.13e+05. This might indicate that there are<br/>strong multicollinearity or other numerical problems."
+      ],
+      "text/latex": [
+       "\\begin{center}\n",
+       "\\begin{tabular}{lclc}\n",
+       "\\toprule\n",
+       "\\textbf{Dep. Variable:}    & EV\\_per\\_1k\\_people & \\textbf{  R-squared:         } &     0.405   \\\\\n",
+       "\\textbf{Model:}            &         OLS         & \\textbf{  Adj. R-squared:    } &     0.405   \\\\\n",
+       "\\textbf{Method:}           &    Least Squares    & \\textbf{  F-statistic:       } &     486.7   \\\\\n",
+       "\\textbf{Date:}             &   Sun, 20 Jul 2025  & \\textbf{  Prob (F-statistic):} &  1.21e-82   \\\\\n",
+       "\\textbf{Time:}             &       18:44:25      & \\textbf{  Log-Likelihood:    } &   -2465.0   \\\\\n",
+       "\\textbf{No. Observations:} &           716       & \\textbf{  AIC:               } &     4934.   \\\\\n",
+       "\\textbf{Df Residuals:}     &           714       & \\textbf{  BIC:               } &     4943.   \\\\\n",
+       "\\textbf{Df Model:}         &             1       & \\textbf{                     } &             \\\\\n",
+       "\\textbf{Covariance Type:}  &      nonrobust      & \\textbf{                     } &             \\\\\n",
+       "\\bottomrule\n",
+       "\\end{tabular}\n",
+       "\\begin{tabular}{lcccccc}\n",
+       "                        & \\textbf{coef} & \\textbf{std err} & \\textbf{t} & \\textbf{P$> |$t$|$} & \\textbf{[0.025} & \\textbf{0.975]}  \\\\\n",
+       "\\midrule\n",
+       "\\textbf{Intercept}      &     -14.2287  &        1.031     &   -13.806  &         0.000        &      -16.252    &      -12.205     \\\\\n",
+       "\\textbf{Median\\_income} &       0.0003  &      1.2e-05     &    22.061  &         0.000        &        0.000    &        0.000     \\\\\n",
+       "\\bottomrule\n",
+       "\\end{tabular}\n",
+       "\\begin{tabular}{lclc}\n",
+       "\\textbf{Omnibus:}       & 643.856 & \\textbf{  Durbin-Watson:     } &     1.477  \\\\\n",
+       "\\textbf{Prob(Omnibus):} &   0.000 & \\textbf{  Jarque-Bera (JB):  } & 32422.307  \\\\\n",
+       "\\textbf{Skew:}          &   3.796 & \\textbf{  Prob(JB):          } &      0.00  \\\\\n",
+       "\\textbf{Kurtosis:}      &  35.080 & \\textbf{  Cond. No.          } &  3.13e+05  \\\\\n",
+       "\\bottomrule\n",
+       "\\end{tabular}\n",
+       "%\\caption{OLS Regression Results}\n",
+       "\\end{center}\n",
+       "\n",
+       "Notes: \\newline\n",
+       " [1] Standard Errors assume that the covariance matrix of the errors is correctly specified. \\newline\n",
+       " [2] The condition number is large, 3.13e+05. This might indicate that there are \\newline\n",
+       " strong multicollinearity or other numerical problems."
+      ],
+      "text/plain": [
+       "<class 'statsmodels.iolib.summary.Summary'>\n",
+       "\"\"\"\n",
+       "                            OLS Regression Results                            \n",
+       "==============================================================================\n",
+       "Dep. Variable:       EV_per_1k_people   R-squared:                       0.405\n",
+       "Model:                            OLS   Adj. R-squared:                  0.405\n",
+       "Method:                 Least Squares   F-statistic:                     486.7\n",
+       "Date:                Sun, 20 Jul 2025   Prob (F-statistic):           1.21e-82\n",
+       "Time:                        18:44:25   Log-Likelihood:                -2465.0\n",
+       "No. Observations:                 716   AIC:                             4934.\n",
+       "Df Residuals:                     714   BIC:                             4943.\n",
+       "Df Model:                           1                                         \n",
+       "Covariance Type:            nonrobust                                         \n",
+       "=================================================================================\n",
+       "                    coef    std err          t      P>|t|      [0.025      0.975]\n",
+       "---------------------------------------------------------------------------------\n",
+       "Intercept       -14.2287      1.031    -13.806      0.000     -16.252     -12.205\n",
+       "Median_income     0.0003    1.2e-05     22.061      0.000       0.000       0.000\n",
+       "==============================================================================\n",
+       "Omnibus:                      643.856   Durbin-Watson:                   1.477\n",
+       "Prob(Omnibus):                  0.000   Jarque-Bera (JB):            32422.307\n",
+       "Skew:                           3.796   Prob(JB):                         0.00\n",
+       "Kurtosis:                      35.080   Cond. No.                     3.13e+05\n",
+       "==============================================================================\n",
+       "\n",
+       "Notes:\n",
+       "[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.\n",
+       "[2] The condition number is large, 3.13e+05. This might indicate that there are\n",
+       "strong multicollinearity or other numerical problems.\n",
+       "\"\"\""
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#Finally, take the summary of the model variable to get the results of the OLS Regression analysis.\n",
+    "model.summary()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "47b4a128-4a10-406b-aaea-15399f838649",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
 }
