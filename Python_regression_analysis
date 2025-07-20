@@ -1,0 +1,10 @@
+   "source": [
+    "# Import relevant Python libraries and modules.\n",
+    "\n",
+    "### YOUR CODE HERE ###\n",
+    "import pandas as pd\n",
+    "import matplotlib.pyplot as pl\n",
+    "import seaborn as sns\n",
+    "from statsmodels.formula.api import ols\n",
+    "import statsmodels.api as sm"
+   ]
