@@ -22,7 +22,8 @@ Order BY M.[ZIP Code] asc */
 /* This query fetches the first 10 rows grouped by ZIP Code from the MN_EV_Registrations table, aliased as M.
 Since we are LEFT JOINING the Minnesota_census_data table, aliased as MI, we exclude ZIP codes from the census that do not have a registered EV.
 Using two correlated subqueries that give us the Sum of Tesla EVs and Non Tesla EVs by ZIP code, we have below a sample of Electric Vehicle data
-according to each ZIP Code in the State of Minnesota, joined with Median income and Population from the Census dataset corresponding to each ZIP. */ 
+according to each ZIP Code in the State of Minnesota, joined with Median income and Population from the Census dataset corresponding to each ZIP. */
+
 
 
 | ZIP Code | Median income | Population | TeslaCount | NonTeslaCount |
@@ -38,14 +39,22 @@ according to each ZIP Code in the State of Minnesota, joined with Median income 
 | 55012    | 93500         | 1948       | 6          | 9             |
 | 55013    | 99898         | 6985       | 23         | 46            |
 
+/* This data was copied with headers into an Excel workbook. From there, three additional columsn were added:
+1. Total_EVs- The sum of TeslaCount and NonTeslaCount
+2. Tesla_Proportion_of_Evs- Divides values in the TeslaCount column with those in the Total_EVs column.
+3. EV_per_1k_people- Divdes values in the Total_EVs with those in the population column.
 
+The Excel worksheet containing the data was saved as a .csv file, later to be used in Python for regression analysis.
+*/
+
+  
 /* SELECT [Vehicle Make], SUM(CONVERT(INT,[Vehicle Count])) as 'Vehicle Count'
 from MN_EV_Registrations
 where [ZIP Code] >= '55001' and [ZIP Code] <= '56763'
 group by [Vehicle Make]
 order by SUM(CONVERT(INT,[Vehicle Count])) DESC */
 
-/* This query gives us the most common Vehicle Makes of Electric Vehicles and is useful for referencing to clue us into any correlating between
+/* This query gives us the most common Vehicle Makes of Electric Vehicles and is useful for referencing to clue us into any correlation between
 the proportion of Teslas out of all EVs and the Median Income for each ZIP Code. */
 
 | Vehicle Make         | Vehicle Count |
