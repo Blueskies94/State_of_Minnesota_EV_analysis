@@ -1,4 +1,4 @@
-SELECT [ZIP Code], [Vehicle Make], SUM(CONVERT(INT,[Vehicle Count])) as 'Vehicle Count'
+SELECT TOP(10) [ZIP Code], [Vehicle Make], SUM(CONVERT(INT,[Vehicle Count])) as 'Vehicle Count'
 from MN_EV_Registrations
 group by [ZIP Code], [Vehicle Make]
 having [ZIP Code] between '55001' and '56763'
